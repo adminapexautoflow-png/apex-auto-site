@@ -28,7 +28,7 @@ export function Reveal({
   delay?: number;
   direction?: Direction;
   className?: string;
-  as?: "div" | "section" | "li" | "tr" | "span" | "p" | "h2";
+  as?: "div" | "section" | "li" | "tr" | "span" | "p" | "h1" | "h2";
 }) {
   const reduced = useReducedMotion();
   const Tag = motion[as] as typeof motion.div;

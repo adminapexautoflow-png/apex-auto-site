@@ -9,7 +9,7 @@ Next.js 16 (App Router) · Tailwind v4 · `motion` · static export to `out/`.
 ```bash
 npm install
 npm run dev      # http://localhost:3000
-npm run build    # emits out/ — this is what Netlify serves
+npm run build    # emits out/ — this is what Cloudflare serves (wrangler.jsonc)
 npm run lint
 ```
 
@@ -19,13 +19,48 @@ npm run lint
 | --- | --- |
 | `lib/content.ts` | Every word of marketing copy. Hand this file to the client for review. |
 | `lib/site.ts` | Contact details, nav, and the Live Line timeline. |
-| `lib/leads.ts` | **The only backend touchpoint on the site.** |
+| `lib/leads.ts` | Backend seam for the homepage contact form. |
+| `lib/booking.ts` | Backend seam for `/book`. **Needs a Web3Forms key — see below.** |
 | `components/LiveLine.tsx` | The left rail — the site's signature element. |
+| `app/book` | The "Book a free call" page. Every CTA on the site points here. |
 | `app/privacy`, `app/sms-terms`, `app/sms-disclosure` | Compliance pages. |
 
-## Wiring up a backend
+## Booking a call — `/book`
 
-Everything server-side funnels through one function:
+Every "Book a free call" button on the site routes to `/book`, which asks for
+first name, last name, email, business, and a preferred day plus a time window
+(morning / midday / afternoon), then emails the request to us.
+
+**This form does not send until someone sets a Web3Forms access key.** Until
+then it renders fine and tells the visitor to email us instead, so shipping
+without the key loses nobody — it just does not collect.
+
+To turn it on:
+
+1. Go to <https://web3forms.com> and enter the ApexAutoFlow inbox that should
+   receive bookings. They email back an access key (a UUID).
+2. Put it in `ACCESS_KEY_FALLBACK` in `lib/booking.ts`, or set
+   `NEXT_PUBLIC_WEB3FORMS_KEY` in the Cloudflare build environment.
+3. Redeploy.
+
+The destination address is **not in this repo** — it lives on the Web3Forms
+side, bound to that key. To change who receives bookings, change it there (or
+generate a key for the new address and swap it in). The key is public by
+design: it only ever permits sending to that one fixed address, so shipping it
+in client JS is safe and intended.
+
+The email arrives with `Reply-To` set to the customer, so hitting Reply in the
+inbox goes straight to the shop owner.
+
+### Using an external scheduler instead
+
+`BOOKING_URL` in `lib/site.ts` still wins if you set it. Drop in a Calendly /
+Cal.com link and every CTA opens that scheduler instead of `/book` — one
+constant, no component edits.
+
+## Wiring up the homepage contact form
+
+The contact form in the `#get-started` section funnels through one function:
 
 ```ts
 submitLead(lead: Lead): Promise<SubmitResult>
@@ -47,12 +82,6 @@ that URL with the `Lead` shape plus `submittedAt`. Nothing else changes.
 **To bring it in-house:** drop `output: "export"` from `next.config.ts`, add
 `app/api/leads/route.ts` accepting `Lead`, and set
 `NEXT_PUBLIC_LEAD_ENDPOINT="/api/leads"`.
-
-### Scheduling
-
-`BOOKING_URL` in `lib/site.ts` is empty, so every "Book a free call" scrolls to
-the on-page form. Set it to a Calendly/Cal.com link and the same buttons open
-the scheduler instead — one constant, no component edits.
 
 ## Rules for editing
 

@@ -15,7 +15,8 @@ export const site = {
 /**
  * BACKEND SEAM (scheduling).
  *
- * Empty string = every "Book a free call" CTA scrolls to the on-page form.
+ * Empty string = every "Book a free call" CTA goes to the on-site booking page
+ * at /book (app/book/page.tsx), which emails the request through lib/booking.ts.
  * Drop in a Calendly / Cal.com / SavvyCal link and the exact same CTAs route
  * there instead. No component changes required — see components/ui/Cta.tsx.
  */

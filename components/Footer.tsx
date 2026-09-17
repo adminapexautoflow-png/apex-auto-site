@@ -9,6 +9,7 @@ const columns = [
       { label: "What you get", href: "/#what-you-get" },
       { label: "Why us", href: "/#why-us" },
       { label: "Pricing", href: "/#pricing" },
+      { label: "Book a free call", href: "/book" },
     ],
   },
   {

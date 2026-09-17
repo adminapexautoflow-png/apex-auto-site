@@ -1,11 +1,17 @@
 "use client";
 
 import type { ReactNode } from "react";
+import Link from "next/link";
 import { BOOKING_URL } from "@/lib/site";
 
+const BOOK_PAGE = "/book/";
+
 /**
- * Every "Book a free call" on the site routes through here, so wiring up a
- * scheduler later is a one-constant change in lib/site.ts — no component edits.
+ * Every "Book a free call" on the site routes through here.
+ *
+ * By default it goes to the on-site booking page (app/book). Set BOOKING_URL in
+ * lib/site.ts to a Calendly / Cal.com / SavvyCal link and the exact same CTAs
+ * open that scheduler instead — one constant, no component edits.
  */
 export function BookCall({
   children,
@@ -26,23 +32,37 @@ export function BookCall({
 
   const external = BOOKING_URL !== "";
 
-  return (
-    <a
-      href={external ? BOOKING_URL : "#get-started"}
-      {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
-      className={`${base} ${styles} ${className}`}
+  const arrow = (
+    <svg
+      aria-hidden
+      viewBox="0 0 16 16"
+      className="h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-x-1"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
     >
-      {children}
-      <svg
-        aria-hidden
-        viewBox="0 0 16 16"
-        className="h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-x-1"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
+      <path d="M2 8h11M9 4l4 4-4 4" strokeLinecap="square" />
+    </svg>
+  );
+
+  if (external) {
+    return (
+      <a
+        href={BOOKING_URL}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={`${base} ${styles} ${className}`}
       >
-        <path d="M2 8h11M9 4l4 4-4 4" strokeLinecap="square" />
-      </svg>
-    </a>
+        {children}
+        {arrow}
+      </a>
+    );
+  }
+
+  return (
+    <Link href={BOOK_PAGE} className={`${base} ${styles} ${className}`}>
+      {children}
+      {arrow}
+    </Link>
   );
 }

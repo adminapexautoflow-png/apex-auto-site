@@ -220,3 +220,32 @@ export const heroCall = {
   tag: "No heat · Emergency",
   estimate: "$480 – $1,100",
 };
+
+/** The /book page. Legal text is not here — see the note at the top. */
+export const booking = {
+  eyebrow: "Book a free call",
+  headline: "Pick a time. We'll do the rest.",
+  body: "Fifteen minutes on the phone. We'll look at your call volume and tell you roughly how many jobs a month are going to the next guy. No pressure, no jargon, no slide deck.",
+  submit: "Request this time",
+  timezoneNote:
+    "All times Mountain Time. We'll email you to confirm the exact slot — if the window you picked is full we'll offer the nearest one.",
+  emailPrompt: "Rather just email?",
+  successTitle: "Got it — check your inbox.",
+  successBody:
+    "We'll confirm your call by email shortly. If it's urgent, email us directly and we'll move faster.",
+  /** The three things a shop owner wants to know before giving up a quarter hour. */
+  reassurance: [
+    {
+      title: "Fifteen minutes, not an hour",
+      body: "We keep it short because you're working. If we can't tell you something useful in fifteen minutes, we've wasted your time and ours.",
+    },
+    {
+      title: "No contract, no card",
+      body: "It's a conversation about your call volume. Nothing to sign, nothing to pay, and no follow-up sequence if you decide it isn't for you.",
+    },
+    {
+      title: "We'll bring numbers",
+      body: "Come with a rough idea of how many calls you miss in a week and we'll do the arithmetic with you on the call.",
+    },
+  ],
+};
