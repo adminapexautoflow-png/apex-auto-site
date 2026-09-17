@@ -154,7 +154,7 @@ export default function SmsDisclosure() {
           admin.apexautoflow@gmail.com
         </a>
         <br />
-        <Link href="/">apexautoflow.netlify.app</Link>
+        <Link href="/">apexautoflow.com</Link>
       </p>
     </LegalPage>
   );

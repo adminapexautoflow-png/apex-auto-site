@@ -6,7 +6,7 @@
 export const site = {
   name: "ApexAutoFlow",
   legalEntity: "SOPS Finance & Accounting LLC",
-  url: "https://apexautoflow.netlify.app",
+  url: "https://apexautoflow.com",
   contactEmail: "partner.apexautoflow@gmail.com",
   adminEmail: "admin.apexautoflow@gmail.com",
   region: "Colorado",

@@ -24,7 +24,7 @@ export default function Privacy() {
         This Privacy Policy explains how SOPS Finance &amp; Accounting LLC,
         operating as ApexAutoFlow (&ldquo;we,&rdquo; &ldquo;us,&rdquo;
         &ldquo;our&rdquo;), collects, uses, and protects information when you
-        contact us, use our services, or visit apexautoflow.netlify.app (the
+        contact us, use our services, or visit apexautoflow.com (the
         &ldquo;Site&rdquo;).
       </p>
 
@@ -136,7 +136,7 @@ export default function Privacy() {
           admin.apexautoflow@gmail.com
         </a>
         <br />
-        apexautoflow.netlify.app
+        apexautoflow.com
       </p>
     </LegalPage>
   );
