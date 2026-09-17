@@ -31,23 +31,21 @@ Every "Book a free call" button on the site routes to `/book`, which asks for
 first name, last name, email, business, and a preferred day plus a time window
 (morning / midday / afternoon), then emails the request to us.
 
-**This form does not send until someone sets a Web3Forms access key.** Until
-then it renders fine and tells the visitor to email us instead, so shipping
-without the key loses nobody — it just does not collect.
+The Web3Forms access key is set in `ACCESS_KEY_FALLBACK` in `lib/booking.ts`,
+so the form sends. `NEXT_PUBLIC_WEB3FORMS_KEY` overrides it if set in the
+Cloudflare build environment.
 
-To turn it on:
+That key is public by design — it only ever permits sending to one fixed
+address — so it lives in the repo and ships in client JS deliberately. It is
+not a secret and does not belong in a secret store.
 
-1. Go to <https://web3forms.com> and enter the ApexAutoFlow inbox that should
-   receive bookings. They email back an access key (a UUID).
-2. Put it in `ACCESS_KEY_FALLBACK` in `lib/booking.ts`, or set
-   `NEXT_PUBLIC_WEB3FORMS_KEY` in the Cloudflare build environment.
-3. Redeploy.
+The destination address is **not in this repo**. It lives on the Web3Forms
+side, bound to the key. To change who receives bookings, change it there, or
+register the new address for a fresh key and swap it in here.
 
-The destination address is **not in this repo** — it lives on the Web3Forms
-side, bound to that key. To change who receives bookings, change it there (or
-generate a key for the new address and swap it in). The key is public by
-design: it only ever permits sending to that one fixed address, so shipping it
-in client JS is safe and intended.
+If the key is ever blanked, the form does not break: it renders normally and
+tells the visitor to email us instead, so it collects nothing rather than
+dropping leads silently.
 
 The email arrives with `Reply-To` set to the customer, so hitting Reply in the
 inbox goes straight to the shop owner.

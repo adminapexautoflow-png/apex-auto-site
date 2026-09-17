@@ -13,7 +13,7 @@
  * SETUP (one minute, once):
  *   1. Go to https://web3forms.com and enter the ApexAutoFlow inbox that
  *      should receive bookings. They email back an access key (a UUID).
- *   2. Put it in ACCESS_KEY below, or set NEXT_PUBLIC_WEB3FORMS_KEY in the
+ *   2. Put it in ACCESS_KEY_FALLBACK below, or set NEXT_PUBLIC_WEB3FORMS_KEY in the
  *      build environment — the env var wins if both are set.
  *
  * The destination address is NOT in this repo. It lives on the Web3Forms side,
@@ -30,7 +30,7 @@
  */
 
 /** Paste the Web3Forms access key here, or set NEXT_PUBLIC_WEB3FORMS_KEY. */
-const ACCESS_KEY_FALLBACK = "";
+const ACCESS_KEY_FALLBACK = "fd29a6cd-b15f-424e-b20d-4c1f832ed530";
 
 const ACCESS_KEY =
   process.env.NEXT_PUBLIC_WEB3FORMS_KEY || ACCESS_KEY_FALLBACK;
