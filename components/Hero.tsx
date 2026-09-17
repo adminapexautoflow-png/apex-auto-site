@@ -24,7 +24,11 @@ export function Hero() {
         };
 
   return (
-    <section className="relative overflow-hidden pt-32 pb-20 sm:pt-40 lg:pb-28">
+    <section
+      /* The first node of the Live Line rail links here. */
+      id="top"
+      className="relative overflow-hidden pt-32 pb-20 sm:pt-40 lg:pb-28"
+    >
       {/* Ambient: one signal bloom behind the console */}
       <div
         aria-hidden

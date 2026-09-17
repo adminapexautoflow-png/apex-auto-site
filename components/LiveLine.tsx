@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
-import { motion, useReducedMotion, useSpring, useTransform } from "motion/react";
+import { motion, useReducedMotion, useScroll, useSpring } from "motion/react";
 import { timeline } from "@/lib/site";
 
 /**
@@ -10,16 +10,17 @@ import { timeline } from "@/lib/site";
  *
  * A permanent instrument rail down the left edge carrying the arc of one
  * recovered job: ring -> no answer -> text sent -> reply -> ranked -> booked
- * -> on site -> paid. It is not a scroll progress bar; the nodes are labelled
- * with elapsed job time, so the rail tells you where in the story you are.
+ * -> on site -> paid. Each node is a link to its section, and the node you are
+ * standing in grows to say so.
  *
- * The signal charges down the track as you scroll and each node ignites as its
- * section arrives. Below xl the rail is replaced by a hairline top bar
- * (see components/Nav.tsx).
+ * The track doubles as the page's scroll bar: it fills continuously with scroll
+ * position, while the nodes light up in steps as their sections arrive. Below
+ * xl the rail is replaced by a hairline top bar (see components/Nav.tsx).
  */
 
 const TOP_PAD = 116; // px reserved above the track for the rail heading
 const BOTTOM_PAD = 88;
+const TRACK_X = 40; // px from the rail's left edge to the track
 
 /** Index of the timeline node whose section currently owns the viewport. */
 export function useActiveNode() {
@@ -70,106 +71,127 @@ export function LiveLine() {
   const active = useActiveNode();
   const reduced = useReducedMotion();
   const last = timeline.length - 1;
-  const target = (active / last) * 100;
 
-  const charge = useSpring(0, { stiffness: 90, damping: 24, mass: 0.6 });
-  const height = useTransform(charge, (v) => `${v}%`);
+  // The charge is the scroll bar: a scaleY on a single px-wide bar, so it is a
+  // GPU transform rather than a per-frame layout. Springing it smooths the
+  // wheel's steps; reduced motion reads the raw value and lands exactly.
+  const { scrollYProgress } = useScroll();
+  const smoothed = useSpring(scrollYProgress, {
+    stiffness: 120,
+    damping: 30,
+    restDelta: 0.001,
+  });
+  const progress = reduced ? scrollYProgress : smoothed;
 
-  useEffect(() => {
-    if (reduced) charge.jump(target);
-    else charge.set(target);
-  }, [target, charge, reduced]);
+  const grow = reduced
+    ? { duration: 0 }
+    : { duration: 0.45, ease: [0.16, 1, 0.3, 1] as const };
 
   // The rail tells the story of the marketing page. It has nothing to say on
   // the legal routes, so it stays off there.
   if (pathname !== "/") return null;
 
+  const trackInset = { top: TOP_PAD, bottom: BOTTOM_PAD };
+
   return (
-    <aside
-      aria-hidden
+    <nav
+      aria-label="Job timeline"
       /* Anchored to the content column, not the window edge, so the rail stays
-         next to the page on ultrawide displays instead of drifting away. */
+         next to the page on ultrawide displays instead of drifting away.
+         The panel itself never takes a click — only the node links do. */
       style={{ left: "max(0px, calc((100vw - 1376px) / 2))" }}
       className="pointer-events-none fixed inset-y-0 z-40 hidden w-[196px] border-r border-line bg-void/70 backdrop-blur-sm xl:block"
     >
-      <div className="absolute left-8 top-11 font-mono text-[10px] uppercase tracking-[0.22em] text-dim">
+      <div className="absolute left-8 top-11 text-[11px] font-medium tracking-[0.01em] text-dim">
         Job timeline
       </div>
       <div className="absolute left-8 top-[68px] h-px w-24 bg-line-bright" />
 
       {/* Unlit track */}
       <div
-        className="absolute left-[38px] w-px bg-line-bright"
-        style={{ top: TOP_PAD, bottom: BOTTOM_PAD }}
+        aria-hidden
+        className="absolute w-px bg-line-bright"
+        style={{ left: TRACK_X, ...trackInset }}
       />
 
-      {/* Charge */}
-      <div
-        className="absolute left-[38px] w-px"
-        style={{ top: TOP_PAD, bottom: BOTTOM_PAD }}
-      >
-        <motion.div
-          style={{ height }}
-          className="w-px bg-gradient-to-b from-signal-dim via-signal to-signal-soft shadow-[0_0_12px_rgb(var(--signal-rgb)/0.55)]"
-        />
-      </div>
+      {/* Charge — the scroll bar */}
+      <motion.div
+        aria-hidden
+        className="absolute w-px origin-top bg-gradient-to-b from-signal-dim via-signal to-signal-soft shadow-[0_0_12px_rgb(var(--signal-rgb)/0.55)]"
+        style={{ left: TRACK_X, ...trackInset, scaleY: progress }}
+      />
 
       {/* Nodes */}
-      <div
-        className="absolute inset-x-0"
-        style={{ top: TOP_PAD, bottom: BOTTOM_PAD }}
-      >
+      <div className="absolute inset-x-0" style={trackInset}>
         {timeline.map((node, i) => {
           const passed = i <= active;
           const isActive = i === active;
+
           return (
-            <div
+            <a
               key={node.id}
-              className="absolute left-[34px] flex -translate-y-1/2 items-center gap-3"
-              style={{ top: `${(i / last) * 100}%` }}
+              href={`#${node.id}`}
+              aria-current={isActive ? "true" : undefined}
+              className="group pointer-events-auto absolute flex -translate-y-1/2 items-center rounded-full py-1 pr-3"
+              style={{ top: `${(i / last) * 100}%`, left: TRACK_X }}
             >
-              <span
-                className="block h-[9px] w-[9px] shrink-0 border transition-all duration-500"
-                style={{
-                  borderColor: passed
-                    ? "var(--color-signal)"
-                    : "var(--color-line-bright)",
-                  background: passed ? "var(--color-signal)" : "var(--color-void)",
-                  boxShadow: isActive
-                    ? "0 0 0 3px rgb(var(--signal-rgb) / 0.14), 0 0 14px rgb(var(--signal-rgb) / 0.5)"
-                    : "none",
-                }}
-              />
-              <span className="flex flex-col leading-[1.35]">
-                <span
-                  className="font-mono text-[10px] tabular-nums transition-colors duration-500"
+              {/* Fixed slot, so the label holds still while the dot grows. */}
+              <span className="relative -ml-[9px] flex h-[18px] w-[18px] shrink-0 items-center justify-center">
+                {node.highlight && (
+                  <span
+                    aria-hidden
+                    className="absolute inset-0 rounded-full border transition-colors duration-500"
+                    style={{
+                      borderColor: passed
+                        ? "rgb(var(--signal-rgb) / 0.55)"
+                        : "rgb(var(--signal-rgb) / 0.3)",
+                    }}
+                  />
+                )}
+
+                <motion.span
+                  aria-hidden
+                  className="block rounded-full border transition-[border-color,background,box-shadow] duration-500 group-hover:border-signal"
+                  animate={{
+                    width: isActive ? 13 : 8,
+                    height: isActive ? 13 : 8,
+                  }}
+                  transition={grow}
                   style={{
-                    color: isActive
+                    borderColor: passed
+                      ? "var(--color-signal)"
+                      : "var(--color-line-bright)",
+                    background: passed
+                      ? "var(--color-signal)"
+                      : "var(--color-void)",
+                    boxShadow: isActive
+                      ? "0 0 0 3px rgb(var(--signal-rgb) / 0.14), 0 0 14px rgb(var(--signal-rgb) / 0.5)"
+                      : "none",
+                  }}
+                />
+              </span>
+
+              <motion.span
+                className="ml-2.5 whitespace-nowrap transition-colors duration-500 group-hover:text-text"
+                animate={{ fontSize: isActive ? 15 : 13 }}
+                transition={grow}
+                style={{
+                  color: isActive
+                    ? "var(--color-text)"
+                    : node.highlight
                       ? "var(--color-signal)"
                       : passed
                         ? "var(--color-muted)"
                         : "var(--color-dim)",
-                  }}
-                >
-                  {node.time}
-                </span>
-                <span
-                  className="font-mono text-[10px] uppercase tracking-[0.14em] transition-colors duration-500"
-                  style={{
-                    color: isActive
-                      ? "var(--color-text)"
-                      : passed
-                        ? "var(--color-muted)"
-                        : "var(--color-dim)",
-                  }}
-                >
-                  {node.label}
-                </span>
-              </span>
-            </div>
+                  fontWeight: isActive ? 600 : 400,
+                }}
+              >
+                {node.label}
+              </motion.span>
+            </a>
           );
         })}
       </div>
-    </aside>
+    </nav>
   );
 }
